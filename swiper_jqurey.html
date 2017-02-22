@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>swiper</title>
+	<style>
+		* {
+			margin:0;
+			padding:0;
+		}
+		a {
+			text-decoration: none;
+		}
+		.wrap {
+			position: relative;
+			width: 600px;
+			height: 400px;
+			margin:100px auto 0 auto;
+			overflow: hidden;
+		}
+		.wrap ul {
+			font-size: 0;
+			position: absolute;
+			width: 4200px;
+			height: 600px;
+			left:-600px;
+		}
+		.wrap ul li {
+			float: left;
+			width: 600px;
+			height: 400px;
+			list-style: none;
+		}
+		.wrap ul li img {
+			width: 600px;
+			height: 400px;
+		}
+		.wrap ol {
+			position: absolute;
+			bottom:10px;
+			right: 5px;
+		}
+		.wrap ol li {
+			float: left;
+			margin-right: 5px;
+			width: 30px;
+			height: 30px;
+			z-index: 5;
+			list-style: none;
+			font-size: 25px;
+			border-radius: 50%;
+			color:yellow;
+			text-align:center;
+			line-height: 30px;
+			background: red;
+			cursor:pointer;
+		}
+		.wrap .active {
+			background-color:green;
+			font-size: 35px;
+			color: white;
+		}
+		.wrap:hover .arrow {
+			display: block;
+		}
+		.wrap .arrow {
+			position: absolute;
+			display: none;
+			top:40%;
+			z-index: 100;
+			font-size: 55px;
+			color:red;
+		}
+		.wrap .arrow:hover {
+			color:green;
+			font-weight: bold;
+		}
+		.wrap .prev_arrow {
+			left: 0;
+		}
+		.wrap .next_arrow {
+			right: 0;
+		}
+	</style>
+</head> 
+<body>
+	<div class="wrap">
+		<ul>
+			<li><img src="./img/5.jpg" alt=""></li>
+			<li><img src="./img/1.jpg" alt=""></li>
+			<li><img src="./img/2.jpg" alt=""></li>
+			<li><img src="./img/3.jpg" alt=""></li>
+			<li><img src="./img/4.jpg" alt=""></li>
+			<li><img src="./img/5.jpg" alt=""></li>
+			<li><img src="./img/1.jpg" alt=""></li>
+		</ul>
+		<ol>
+			<li>1</li>
+			<li>2</li>
+			<li>3</li>
+			<li>4</li>
+			<li>5</li>
+		</ol>
+		<a href="" class="arrow prev_arrow" id="prev_arrow">&lt;</a>
+		<a href="" class="arrow next_arrow" id="next_arrow">&gt;</a>
+	</div>
+	<script src="jquery-3.1.1.js"></script>
+	<script>
+		var img_width = $("img").width();
+		function next_pic () {
+			currentIndex++;
+			if(currentIndex>4){
+				currentIndex = 0;
+			}
+			showCurrentNum();
+			if(parseInt($(".wrap ul").position().left) === -3600){
+				$(".wrap ul").animate({left:"-"+img_width*1+"px"},0);
+				$(".wrap ul").animate({left:"-="+img_width},1000);
+				// 当到最后一张时，我们让其left变成-600，不给动画，即这时瞬间回到了第一张，然后再立即执行向下一张的动画
+			}else{
+				$(".wrap ul").animate({left:"-="+img_width},1000);
+			}
+		}
+		function prev_pic () {
+			currentIndex--;
+			if(currentIndex<0){
+				currentIndex = 4;
+			}
+			showCurrentNum();
+			if(parseInt($(".wrap ul").position().left) === 0){
+				$(".wrap ul").animate({left:"-"+img_width*5+"px"},0);
+				$(".wrap ul").animate({left:"+="+img_width},1000);
+			}else{
+				$(".wrap ul").animate({left:"+="+img_width+"px"},1000);
+			}
+		}
+
+		$("#next_arrow").click(function (e) {
+			e.preventDefault();
+			if(!$(".wrap ul").is(":animated")){
+				next_pic();
+			}
+		});
+		$("#prev_arrow").click(function (e) {
+			e.preventDefault();
+			if(!$(".wrap ul").is(":animated")){
+				// 注意：这里需要做出一个判断，如果目前ul下的轮播图已经处于动画中（即动画的margin值还在变化之中，这时我们就不能直接再动画了，否则会出现问题）
+				prev_pic();
+			}
+		});
+
+		var timer = null;
+		function autoplay () {
+			timer =  setInterval(function () {
+				next_pic();
+			},4000);
+		}
+		autoplay();
+
+		// 当鼠标移入container中时轮播图停止播放
+		var $container = $(".wrap");
+		$container.hover(function () {
+			clearInterval(timer);
+		},function () {
+			autoplay();
+		});
+
+
+		// 是下方的数字同时也动起来
+		var currentIndex = 0;
+		function showCurrentNum () {
+			for(var i = 0; i < 5; i++){
+				$(".wrap ol li").eq(i).removeClass("active");
+			}
+			$(".wrap ol li").eq(currentIndex).addClass("active");
+		}
+		showCurrentNum();
+
+		//当数字被点击时，图片也可以动起来
+		for(var i = 0; i < 5; i++){
+			(function (i) {
+				$(".wrap ol li").eq(i).click(function () {
+					var distance = currentIndex - i;
+					if(parseInt($(".wrap ul").position().left) === 0){
+						distance = distance - 5;
+						$(".wrap ul").animate({left:"+="+distance*img_width+"px"},500);
+					}else if(parseInt($(".wrap ul").position().left) === -3600){
+						distance = 5 + distance;
+						$(".wrap ul").animate({left:"+="+distance*img_width+"px"},500);
+					}else{
+						$(".wrap ul").animate({left:"+="+distance*img_width+"px"},500);
+					}
+					currentIndex = i;
+					showCurrentNum();
+				});
+			})(i);
+		}	
+	</script>
+</body>
+</html>
